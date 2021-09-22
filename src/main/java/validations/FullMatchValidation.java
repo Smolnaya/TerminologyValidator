@@ -4,6 +4,7 @@ import ru.textanalysis.tawt.jmorfsdk.JMorfSdk;
 import ru.textanalysis.tawt.jmorfsdk.loader.JMorfSdkFactory;
 import ru.textanalysis.tawt.ms.external.sp.BearingPhraseExt;
 import ru.textanalysis.tawt.ms.external.sp.OmoFormExt;
+import ru.textanalysis.tawt.ms.grammeme.MorfologyParameters;
 import ru.textanalysis.tawt.ms.internal.IOmoForm;
 import ru.textanalysis.tawt.ms.internal.ref.RefOmoForm;
 import ru.textanalysis.tawt.ms.storage.OmoFormList;
@@ -53,7 +54,9 @@ public class FullMatchValidation {
         OmoFormList list = jMorfSdk.getAllCharacteristicsOfForm(term);
         String initialTerm = "";
         for (IOmoForm item : list) {
-            initialTerm = item.getInitialFormString();
+            if (item.getTypeOfSpeech() == MorfologyParameters.TypeOfSpeech.NOUN) {
+                initialTerm = item.getInitialFormString();
+            }
         }
 
 //      Поиск первого совпадения главного слова опорного оборота с термином в тексте
