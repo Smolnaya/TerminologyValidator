@@ -74,33 +74,31 @@ public class FullMatchValidation {
                     if (initialTerm.equals(refOmoForm.getInitialFormString())) { // гл. слово о.б. совпадает с термином
                         firstDependents.addAll(omoForm.getDependentWords()); // записать его зависимые слова
                         firstTermSentence = i;
-                        System.out.println("Зависимости первого соответствующего предложения:");
-                        firstDependents.forEach(first -> System.out.println(first.getCurrencyOmoForm()));
                         break quit;
                     }
                 }
             }
         }
 
+        System.out.println("Зависимости первого соответствующего предложения:");
+        firstDependents.forEach(first -> System.out.println(first.getCurrencyOmoForm()));
+
 //      Поиск последующих совпадений зависимых слов
         for (int i = firstTermSentence + 1; i < phraseExt.size(); i++) {
             List<OmoFormExt> omoForms = new ArrayList<>(phraseExt.get(i).getMainOmoForms());
             for (OmoFormExt omoForm : omoForms) {
                 List<OmoFormExt> currentDependents = new ArrayList<>(omoForm.getDependentWords());
-                System.out.println("\tГлавное слово текущей зависимости:");
-                currentDependents.forEach(current -> System.out.println("\t" + current.getMainWord().getCurrencyOmoForm()));
-                System.out.println("\tЗависимость:");
-                currentDependents.forEach(current -> System.out.println("\t" + current.getCurrencyOmoForm()));
                 for (OmoFormExt current : currentDependents) {
                     for (OmoFormExt first : firstDependents) {
-                        if (first.getCurrencyOmoForm().hashCode() == current.getCurrencyOmoForm().hashCode()) {
-                            System.out.println("Найдено точное совпадение среди зависимых слов в предложении " + (i + 1));
-                            System.out.println("\tзависимость: " + first.getCurrencyOmoForm());
-                            if (first.getMainWord().getCurrencyOmoForm().hashCode()
-                                    == current.getMainWord().getCurrencyOmoForm().hashCode()) {
-                                System.out.println("\tХеши главных слов совпадают.");
+                        if (first.getCurrencyOmoForm().getInitialForm().hashCode() ==
+                                current.getCurrencyOmoForm().getInitialForm().hashCode()) {
+                            if (first.getMainWord().getCurrencyOmoForm().getInitialForm().hashCode()
+                                    == current.getMainWord().getCurrencyOmoForm().getInitialForm().hashCode()) {
+                                System.out.println("Главное: " + current.getMainWord().getCurrencyOmoForm().getInitialForm().getInitialFormString());
+                                System.out.println("Зависимое: " + current.getCurrencyOmoForm().getInitialForm().getInitialFormString());
+                                System.out.println("Хеши главных слов совпадают.");
                             } else {
-                                System.out.println("\tХеши главных слов не совпадают.");
+                                System.out.println("Хеши главных слов не совпадают.");
                             }
                         }
                     }
