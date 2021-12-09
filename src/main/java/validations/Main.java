@@ -1,40 +1,34 @@
 package validations;
 
-import java.util.List;
-
 public class Main {
 
     public static void main(String[] args) {
-        RecursiveValidator recursiveValidator = new RecursiveValidator();
+        TermValidator termValidator = new TermValidator();
 
 //      найдено совпадение зависимых слов и их главные слова соответстсвуют
         String term = "системы";
         String text = "Предложение без термина. Открытые системы характеризуются обменом вещества. " +
                 "Еще одно предложение без термина. Открытые атомы обмениваются веществом. Открытая система характеризуется" +
                 " другими свойствами.";
-        List<String> errors = recursiveValidator.findMatch(term, text);
-        System.out.println("Errors: " + errors);
-        System.out.println("\n");
+        System.out.println("Errors1: " + termValidator.findMatch(term, text));
 
 //      не найдено совпадений зависимых слов
         String term2 = "боль";
         String text2 = "Головные боли входят в число самых распространенных расстройств нервной системы." +
                 "Головная боль испытывается половиной взрослых людей.";
-//        findMatch(term2, text2, jMorfSdk, sp);
-        System.out.println("\n");
+        System.out.println("Errors2: " + termValidator.findMatch(term2, text2));
 
 //      найдено совпадение зависимых слов и их главные слова соответстсвуют
         String term3 = "пандемия";
         String text3 = "Пандемия коронавируса оказала серьезное негативное воздействие на системы здравоохранения многих стран. " +
                 "Пандемия нового коронавируса способна подорвать глобальные усилия стран по борьбе с многими инфекционными заболеваниями.";
-//        findMatch(term3, text3, jMorfSdk, sp);
-        System.out.println("\n");
+        System.out.println("Errors3: " + termValidator.findMatch(term3, text3));
 
 //      совпадение с термином найдено во втором предложении
         String term4 = "заседание";
         String text4 = "Сегодня состоялось очередное заседание Антинаркотической комиссии в Домодедово. " +
                 "Заседание было посвящено подведению итогов межведомственной работы по профилактике наркомании.";
-//        findMatch(term4, text4, jMorfSdk, sp);
+        System.out.println("Errors4: " + termValidator.findMatch(term4, text4));
 
     }
 

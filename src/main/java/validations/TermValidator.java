@@ -14,13 +14,16 @@ import ru.textanalysis.tawt.ms.internal.ref.RefOmoForm;
 import ru.textanalysis.tawt.ms.storage.OmoFormList;
 import ru.textanalysis.tawt.sp.api.SyntaxParser;
 
-public class RecursiveValidator {
-    private final List<String> errorList = new ArrayList<>();
+public class TermValidator {
     private static final SyntaxParser sp = new SyntaxParser();
     private static final JMorfSdk jMorfSdk = JMorfSdkFactory.loadFullLibrary();
 
-    public List<String> findMatch(String term, String text) {
+    public TermValidator() {
         sp.init();
+    }
+
+    public List<String> findMatch(String term, String text) {
+        List<String> errors = new ArrayList<>();
 //      1. Термин к начальной форме
         OmoFormList list = jMorfSdk.getAllCharacteristicsOfForm(term);
         String initialTerm = "";
@@ -30,10 +33,10 @@ public class RecursiveValidator {
             }
         }
 
+//      2. Поиск первого о/о с термином и списка его зависимых слов (назовем этот список стартовым)
         List<BearingPhraseExt> phraseExt = sp.getTreeSentenceWithoutAmbiguity(text);
         List<OmoFormExt> dependentsOfTerm = new ArrayList<>();
         int firstTermSentence = 0;
-//      2. Поиск первого о/о с термином и списка его зависимых слов (назовем этот список стартовым)
         while (dependentsOfTerm.isEmpty()) {
             quit:
             for (int i = 0; i < phraseExt.size(); i++) {
@@ -48,9 +51,6 @@ public class RecursiveValidator {
             }
         }
 
-        System.out.println("Зависимости первого соответствующего предложения:");
-        dependentsOfTerm.forEach(first -> System.out.println(first.getCurrencyOmoForm()));
-
 //      3. Поиск зависимых слов у о.оборотов в тексте и сравнение их с зависымыми термина firstDependents
 //      Поиск начинается с о/о следующего после того, в котором найден термин
         for (int i = firstTermSentence + 1; i < phraseExt.size(); i++) {
@@ -59,14 +59,14 @@ public class RecursiveValidator {
             for (OmoFormExt omoForm : omoForms) {
 //              Список зависимых слов в текущем о/о
                 List<OmoFormExt> dependentsOfOmoForm = new ArrayList<>(omoForm.getDependentWords());
-                loop(dependentsOfOmoForm, dependentsOfTerm);
+                errors.addAll(search(dependentsOfOmoForm, dependentsOfTerm));
             }
         }
-
-        return errorList;
+        return errors;
     }
 
-    private void loop(List<OmoFormExt> dependentsOfOmoForm, List<OmoFormExt> dependentsOfTerm) {
+    private List<String> search(List<OmoFormExt> dependentsOfOmoForm, List<OmoFormExt> dependentsOfTerm) {
+        List<String> errors = new ArrayList<>();
         for (OmoFormExt dependentOfOmoForm : dependentsOfOmoForm) { // по каждому зависимому о/о
             GetCharacteristics current = dependentOfOmoForm.getCurrencyOmoForm().getInitialForm();
             for (OmoFormExt dependentOfTerm : dependentsOfTerm) { // по каждому зависимому термина
@@ -75,14 +75,15 @@ public class RecursiveValidator {
                     GetCharacteristics mwOfDependentOfTerm = dependentOfTerm.getMainWord().getCurrencyOmoForm().getInitialForm(); // берем гс зависимого термина
                     GetCharacteristics mwOfDependentOmoForm = dependentOfOmoForm.getMainWord().getCurrencyOmoForm().getInitialForm(); // берем гс зависимого о/о
                     if (mwOfDependentOmoForm.getInitialFormKey() != mwOfDependentOfTerm.getInitialFormKey()) { // сравниваем гс
-                        errorList.add(String.format("Ожидание: %s, реальность: %s.", mwOfDependentOfTerm.getInitialFormString(), mwOfDependentOmoForm.getInitialFormString()));
+                        errors.add(String.format("Ожидание: %s, реальность: %s.", mwOfDependentOfTerm.getInitialFormString(), mwOfDependentOmoForm.getInitialFormString()));
                     }
                 }
             }
             if (!dependentOfOmoForm.getDependentWords().isEmpty()) { // если у текущего зависимого есть еще зависимые
-                loop(dependentOfOmoForm.getDependentWords(), dependentsOfTerm);
+                search(dependentOfOmoForm.getDependentWords(), dependentsOfTerm);
             }
         }
+        return errors;
     }
 
 }
